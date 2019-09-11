@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import fetch from 'node-fetch';
 import path from 'path';
 import fs from 'fs';
+import { resourceTypes } from 'polyfills-loader';
 import { startServer, createConfig } from '../../src/es-dev-server.js';
 import { compatibilityModes, virtualFilePrefix } from '../../src/constants.js';
 import { userAgents } from '../user-agents.js';
@@ -9,57 +10,95 @@ import { userAgents } from '../user-agents.js';
 const update = process.argv.includes('--update-snapshots');
 const host = 'http://localhost:8080/';
 
-const fixtures = ['simple', 'inline-module', 'import-map'];
-const snapshotsDir = path.join(__dirname, '..', 'snapshots', 'transform-index-html');
+const snapshotsDir = path.join(__dirname, '..', 'snapshots', 'polyfills-loader');
 
-describe('transform-index-html middleware', () => {
-  fixtures.forEach(fixture => {
+async function expectSnapshotMatches(name) {
+  const response = await fetch(`${host}index.html`, {
+    headers: {
+      'user-agent': userAgents['Chrome 78'],
+    },
+  });
+  expect(response.status).to.equal(200);
+  const responseText = await response.text();
+  const filePath = path.join(snapshotsDir, `${name}.html`);
+
+  if (update) {
+    fs.writeFileSync(filePath, responseText);
+  } else {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`No snapshot found for ${name}`);
+    }
+
+    expect(fs.readFileSync(filePath, 'utf-8').replace(/\r\n/g, '\n')).to.equal(
+      responseText.replace(/\r\n/g, '\n'),
+    );
+  }
+}
+
+describe('polyfills-loader middleware', () => {
+  describe('snapshot tests', () => {
     Object.values(compatibilityModes).forEach(compatibility => {
-      // inline-module + compat mode none doesn't trigger transform without running babel
-      const extraOptionsArray =
-        fixture === 'inline-module' && compatibility === compatibilityModes.NONE
-          ? [null, { nodeResolve: true }]
-          : [null];
+      it(`injects polyfills into an index.html file with compatibility ${compatibility}`, async () => {
+        let server;
+        try {
+          ({ server } = await startServer(
+            createConfig({
+              port: 8080,
+              rootDir: path.resolve(__dirname, '..', 'fixtures', 'inline-module'),
+              compatibility,
+              nodeResolve: true,
+            }),
+          ));
 
-      extraOptionsArray.forEach(extraOptions => {
-        const name = `${fixture}-${compatibility}${extraOptions ? '-babel' : ''}`;
-        it(`${name} matches the snapshot`, async () => {
-          let server;
-          try {
-            ({ server } = await startServer(
-              createConfig({
-                port: 8080,
-                rootDir: path.resolve(__dirname, '..', 'fixtures', fixture),
-                compatibility,
-                ...extraOptions,
-              }),
-            ));
-
-            const response = await fetch(`${host}index.html`, {
-              headers: {
-                'user-agent': userAgents['Chrome 78'],
-              },
-            });
-            expect(response.status).to.equal(200);
-            const responseText = await response.text();
-            const filePath = path.join(snapshotsDir, `${name}.html`);
-
-            if (update) {
-              fs.writeFileSync(filePath, responseText);
-            } else {
-              if (!fs.existsSync(filePath)) {
-                throw new Error(`No snapshot found for ${name}`);
-              }
-
-              expect(fs.readFileSync(filePath, 'utf-8').replace(/\r\n/g, '\n')).to.equal(
-                responseText.replace(/\r\n/g, '\n'),
-              );
-            }
-          } finally {
-            server.close();
-          }
-        });
+          await expectSnapshotMatches(compatibility);
+        } finally {
+          server.close();
+        }
       });
+    });
+
+    it('can set custom polyfills', async () => {
+      let server;
+      try {
+        ({ server } = await startServer(
+          createConfig({
+            port: 8080,
+            rootDir: path.resolve(__dirname, '..', 'fixtures', 'simple'),
+            polyfillsLoader: {
+              polyfills: {
+                intersectionObserver: true,
+                esModuleShims: true,
+              },
+            },
+          }),
+        ));
+
+        await expectSnapshotMatches('custom-polyfills');
+      } finally {
+        server.close();
+      }
+    });
+
+    it('can set polyfills loader configuration', async () => {
+      let server;
+      try {
+        ({ server } = await startServer(
+          createConfig({
+            port: 8080,
+            rootDir: path.resolve(__dirname, '..', 'fixtures', 'simple'),
+            polyfillsLoader: {
+              extraResources: [
+                { type: resourceTypes.JS_SCRIPT, path: '/a.js' },
+                { type: resourceTypes.JS_SCRIPT, path: '/b.js' },
+              ],
+            },
+          }),
+        ));
+
+        await expectSnapshotMatches('custom-polyfills-loader');
+      } finally {
+        server.close();
+      }
     });
   });
 
@@ -76,8 +115,7 @@ describe('transform-index-html middleware', () => {
 
       const indexResponse = await fetch(`${host}index.html`);
       expect(indexResponse.status).to.equal(200);
-      const fetchPolyfillPath = /polyfills\/fetch\..+\.js/.exec(await indexResponse.text())[0];
-      const fetchPolyfillResponse = await fetch(`${host}${fetchPolyfillPath}`);
+      const fetchPolyfillResponse = await fetch(`${host}polyfills/fetch.js`);
       expect(fetchPolyfillResponse.status).to.equal(200);
       expect(fetchPolyfillResponse.headers.get('content-type')).to.equal('text/javascript');
       expect(fetchPolyfillResponse.headers.get('cache-control')).to.equal(
@@ -89,7 +127,7 @@ describe('transform-index-html middleware', () => {
     }
   });
 
-  it('serves inline module 0', async () => {
+  it('serves inline script 0', async () => {
     let server;
     try {
       ({ server } = await startServer(
@@ -104,7 +142,7 @@ describe('transform-index-html middleware', () => {
       expect(indexResponse.status).to.equal(200);
 
       const inlineModule0Response = await fetch(
-        `${host}${virtualFilePrefix}inline-module-0.js?source=/index.html`,
+        `${host}${virtualFilePrefix}inline-script-0.js?source=/index.html`,
       );
       expect(inlineModule0Response.status).to.equal(200);
       expect(inlineModule0Response.headers.get('content-type')).to.equal('text/javascript');
@@ -115,7 +153,7 @@ describe('transform-index-html middleware', () => {
     }
   });
 
-  it('serves inline module 1', async () => {
+  it('serves inline script 1', async () => {
     let server;
     try {
       ({ server } = await startServer(
@@ -130,7 +168,7 @@ describe('transform-index-html middleware', () => {
       expect(indexResponse.status).to.equal(200);
 
       const inlineModule1Response = await fetch(
-        `${host}${virtualFilePrefix}inline-module-1.js?source=/index.html`,
+        `${host}${virtualFilePrefix}inline-script-1.js?source=/index.html`,
       );
       expect(inlineModule1Response.status).to.equal(200);
       expect(inlineModule1Response.headers.get('content-type')).to.equal('text/javascript');
