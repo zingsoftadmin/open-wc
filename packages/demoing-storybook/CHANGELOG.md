@@ -3,6 +3,76 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/open-wc/open-wc/compare/@open-wc/demoing-storybook@1.6.4...@open-wc/demoing-storybook@1.7.0) (2020-01-14)
+
+
+### Features
+
+* **demoing-storybook:** allow customizing rollup config ([040f8c4](https://github.com/open-wc/open-wc/commit/040f8c4ba499309f152d1e70bffb310b8e4a7546))
+* **demoing-storybook:** support main.js ([527381a](https://github.com/open-wc/open-wc/commit/527381a2aae511c89bcce9046122909f1177274a))
+
+
+
+
+
+## [1.6.4](https://github.com/open-wc/open-wc/compare/@open-wc/demoing-storybook@1.6.3...@open-wc/demoing-storybook@1.6.4) (2020-01-13)
+
+
+### Bug Fixes
+
+* **demoing-storybook:** allow custom-elements.json in rootdir ([b38960c](https://github.com/open-wc/open-wc/commit/b38960cd1a6974802c4109dc59d4a3b80ee014eb))
+
+
+
+
+
+## [1.6.3](https://github.com/open-wc/open-wc/compare/@open-wc/demoing-storybook@1.6.2...@open-wc/demoing-storybook@1.6.3) (2020-01-13)
+
+
+### Bug Fixes
+
+* **demoing-storybook:** make -c alias for --config-dir ([c9a4978](https://github.com/open-wc/open-wc/commit/c9a49789afb4848854c74405236b691c8c2e44ee))
+
+
+
+
+
+## [1.6.2](https://github.com/open-wc/open-wc/compare/@open-wc/demoing-storybook@1.6.1...@open-wc/demoing-storybook@1.6.2) (2020-01-13)
+
+**Note:** Version bump only for package @open-wc/demoing-storybook
+
+
+
+
+
+## [1.6.1](https://github.com/open-wc/open-wc/compare/@open-wc/demoing-storybook@1.6.0...@open-wc/demoing-storybook@1.6.1) (2020-01-13)
+
+
+### Bug Fixes
+
+* update to storybook 5.3.1 ([2d3622d](https://github.com/open-wc/open-wc/commit/2d3622d41412cc5d858d3b1e6791035ed1d76e12))
+
+
+
+
+
+# [1.6.0](https://github.com/open-wc/open-wc/compare/@open-wc/demoing-storybook@1.5.3...@open-wc/demoing-storybook@1.6.0) (2020-01-13)
+
+
+### Bug Fixes
+
+* **demoing-storybook:** build one config at a time ([8d2287d](https://github.com/open-wc/open-wc/commit/8d2287d9875d83e84677bd2e1d48858006708a49))
+* **demoing-storybook:** fix scanning dependencies when copying json ([9f904cc](https://github.com/open-wc/open-wc/commit/9f904cc92424fc7c580eed2290a1f6febb4ecea5))
+
+
+### Features
+
+* **demoing-storybook:** ignore common rollup warnings ([5329b5a](https://github.com/open-wc/open-wc/commit/5329b5ada6ad817086c88938ee8e64e13e794458))
+
+
+
+
+
 ## [1.5.3](https://github.com/open-wc/open-wc/compare/@open-wc/demoing-storybook@1.5.2...@open-wc/demoing-storybook@1.5.3) (2020-01-10)
 
 
