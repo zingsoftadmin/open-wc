@@ -5,14 +5,14 @@ const path = require('path');
 
 const build = require('./build');
 const readCommandLineArgs = require('./readCommandLineArgs');
-const listFiles = require('../shared/listFiles');
 const toBrowserPath = require('../shared/toBrowserPath');
+const storiesPatternsToFiles = require('../shared/storiesPatternsToFiles');
 
 (async function main() {
   const rootDir = process.cwd();
   const config = readCommandLineArgs();
   const storiesPattern = `${process.cwd()}/${config.stories}`;
-  const storyFiles = await listFiles(storiesPattern, rootDir);
+  const storyFiles = await storiesPatternsToFiles(config.stories, rootDir);
   const storyUrls = storyFiles.map(filePath => {
     const relativeFilePath = path.relative(rootDir, filePath);
     return `./${toBrowserPath(relativeFilePath)}`;
@@ -31,5 +31,6 @@ const toBrowserPath = require('../shared/toBrowserPath');
     outputDir: config.outputDir,
     managerPath: require.resolve(config.managerPath),
     previewPath: require.resolve(config.previewPath),
+    rollupConfigDecorator: config.rollup,
   });
 })();
