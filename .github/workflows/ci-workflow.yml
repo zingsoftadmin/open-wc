@@ -39,13 +39,16 @@ jobs:
         run: npm run test:node
       - name: "Tests - headless browser"
         run: npm run test:browser
-      - name: "Tests - BrowserStack"
-        if: >
-          !contains(toJson(github) , '"fork": true') || (github.repository == 'open-wc/open-wc' && github.event_name == 'push')
-        run: npm run test:bs
-        env:
-          BROWSER_STACK_USERNAME: ${{ secrets.BROWSER_STACK_USERNAME }}
-          BROWSER_STACK_ACCESS_KEY: ${{ secrets.BROWSER_STACK_ACCESS_KEY }}
+    # Disabled BrowserStack to achieve speed. 
+    # If uncommneted it will run only on non-forked PRs, after any-kind of PR merges and pushes to repo by it's memebers   
+    # - name: "Tests - BrowserStack"
+    # Runs only on non-forked PRs, after any-kind of PR merges and pushes to repo by it's memebers   
+    #   if: >
+    #     !contains(toJson(github) , '"fork": true') || (github.repository == 'open-wc/open-wc' && github.event_name == 'push')
+    #   run: npm run test:bs
+    #   env:
+    #     BROWSER_STACK_USERNAME: ${{ secrets.BROWSER_STACK_USERNAME }}
+    #     BROWSER_STACK_ACCESS_KEY: ${{ secrets.BROWSER_STACK_ACCESS_KEY }}
 
   # Publish job will be run only when the changes are merged to Master branch
   npm-deploy-job:
