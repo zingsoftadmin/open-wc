@@ -60,7 +60,6 @@ module.exports = function readCommandLineArgs() {
     },
     {
       name: 'stories',
-      alias: 's',
       defaultValue: mainJs.stories || './stories/*.stories.{js,mdx}',
       description: 'List of story files e.g. --stories stories/*.stories.{js,mdx}',
     },
@@ -76,8 +75,7 @@ module.exports = function readCommandLineArgs() {
     },
   ];
 
-  const args = commandLineArgs(optionDefinitions);
-  args.stories = typeof args.stories === 'string' ? [args.stories] : args.stories;
+  const args = commandLineArgs(optionDefinitions, { partial: true });
 
   let options = {
     configDir: args['config-dir'],
